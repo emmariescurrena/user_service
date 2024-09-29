@@ -16,7 +16,7 @@ public class Recommendation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long recommendation_id;
+    private Long id;
     
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id")

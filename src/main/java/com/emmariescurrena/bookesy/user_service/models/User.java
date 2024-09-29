@@ -4,6 +4,7 @@ package com.emmariescurrena.bookesy.user_service.models;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,6 +21,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -61,6 +63,14 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Role role;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_config_preferences",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "config_preference_id")
+    )
+    private Set<ConfigPreference> configPreferences;
 
     public User setRole(Role role) {
         this.role = role;

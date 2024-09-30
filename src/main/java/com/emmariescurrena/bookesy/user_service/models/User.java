@@ -15,6 +15,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +24,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -56,13 +57,9 @@ public class User implements UserDetails {
 
     private String bio;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Role role;
+    @Column(unique = true, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -72,7 +69,7 @@ public class User implements UserDetails {
     )
     private Set<ConfigPreference> configPreferences;
 
-    public User setRole(Role role) {
+    public User setRole(RoleEnum role) {
         this.role = role;
 
         return this;
@@ -81,7 +78,7 @@ public class User implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.getName().toString());
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.toString());
 
         return List.of(authority);
     }

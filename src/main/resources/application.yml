@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: ${USER_DB_POSTGRES_URL}
+    username: ${USER_DB_POSTGRES_USER}
+    password: ${USER_DB_POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: create
+    open-in-view: false
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}

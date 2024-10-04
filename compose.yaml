@@ -1,0 +1,18 @@
+services:
+  user-service:
+    build:
+      context: .
+    env_file: .env
+    depends_on:
+      - user-service-db
+    ports:
+      - 8081:8081
+
+  user-service-db:
+    image: "postgres:latest"
+    environment:
+      - POSTGRES_DB=${USER_DB_POSTGRES_DB_NAME}
+      - POSTGRES_USER=${USER_DB_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${USER_DB_POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432

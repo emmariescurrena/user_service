@@ -22,14 +22,6 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @GetMapping
-    public User getUser() {
-        User user = new User();
-        user.setName("Robert");
-
-        return user;
-    }
-
     @PostMapping
     public ResponseEntity<?> createUser(User user) {
         User createdUser = userService.createUser(user);

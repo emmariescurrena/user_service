@@ -4,7 +4,6 @@ package com.emmariescurrena.bookesy.user_service.models;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,18 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -62,6 +56,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private RoleEnum role = RoleEnum.USER;
 
+    /* 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
         name = "user_config_preferences",
@@ -69,6 +64,7 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "config_preference_id")
     )
     private Set<ConfigPreference> configPreferences;
+    */
 
     public User setRole(RoleEnum role) {
         this.role = role;

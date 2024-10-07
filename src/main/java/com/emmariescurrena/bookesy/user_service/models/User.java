@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,9 +60,9 @@ public class User implements UserDetails {
 
     @Column(unique = true, nullable = false)
     @Enumerated(EnumType.STRING)
-    private RoleEnum role;
+    private RoleEnum role = RoleEnum.USER;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
         name = "user_config_preferences",
         joinColumns = @JoinColumn(name = "user_id"),

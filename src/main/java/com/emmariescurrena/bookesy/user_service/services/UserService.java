@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.emmariescurrena.bookesy.user_service.models.RoleEnum;
 import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.repositories.UserRepository;
 
@@ -20,10 +19,7 @@ public class UserService {
             throw new IllegalArgumentException("Email already in use.");
         }
 
-        user.setRole(RoleEnum.USER);
-
         return userRepository.save(user);
-
     }
 
     public Optional<User> getUserById(Long id) {

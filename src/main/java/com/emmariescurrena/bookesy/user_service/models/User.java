@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.emmariescurrena.bookesy.user_service.dtos.UserRequestDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -45,18 +46,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String surname;
 
-    @Column(name = "created_date", nullable = false, updatable = false)
+    @Column(name = "created_date", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     private Date creationDate;
 
     private String bio;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RoleEnum role = RoleEnum.USER;
 
-    /* 
+    /*
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
         name = "user_config_preferences",
@@ -112,6 +113,14 @@ public class User implements UserDetails {
     @JsonIgnore
     public boolean isEnabled() {
         return true;
+    }
+
+    public User(UserRequestDto userDto) {
+        this.auth0UserId = userDto.getAuth0UserId();
+        this.email = userDto.getEmail();
+        this.name = userDto.getName();
+        this.surname = userDto.getSurname();
+        this.bio = userDto.getBio();
     }
 
 }

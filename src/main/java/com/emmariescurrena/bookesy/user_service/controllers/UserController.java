@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.emmariescurrena.bookesy.user_service.dtos.UserRequestDto;
+import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.services.UserService;
 
@@ -27,7 +27,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@Valid @RequestBody UserRequestDto userDto) {
+    public User createUser(@Valid @RequestBody CreateUserDto userDto) {
         return userService.createUser(new User(userDto));
     }
 

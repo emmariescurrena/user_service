@@ -3,7 +3,7 @@ package com.emmariescurrena.bookesy.user_service.dtos;
 import lombok.Data;
 
 @Data
-public class UserRequestDto {
+public class CreateUserDto {
 
     private String auth0UserId;
     private String email;

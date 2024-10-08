@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.emmariescurrena.bookesy.user_service.dtos.UserRequestDto;
+import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -21,12 +21,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@NoArgsConstructor
 @Table(name = "USERS")
 public class User implements UserDetails {
     
@@ -46,9 +46,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String surname;
 
-    @Column(name = "created_date", updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    @CreatedDate
+    @Column(name = "creation_date", updatable = false)
+    @CreationTimestamp
     private Date creationDate;
 
     private String bio;
@@ -115,7 +114,7 @@ public class User implements UserDetails {
         return true;
     }
 
-    public User(UserRequestDto userDto) {
+    public User(CreateUserDto userDto) {
         this.auth0UserId = userDto.getAuth0UserId();
         this.email = userDto.getEmail();
         this.name = userDto.getName();

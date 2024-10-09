@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.emmariescurrena.bookesy.user_service.exceptions.EmailAlreadyExistsException;
 import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.repositories.UserRepository;
 
@@ -16,7 +17,7 @@ public class UserService {
 
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email already in use.");
+            throw new EmailAlreadyExistsException("Email already registered: " + user.getEmail());
         }
 
         return userRepository.save(user);

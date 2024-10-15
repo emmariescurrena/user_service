@@ -56,6 +56,12 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private RoleEnum role = RoleEnum.USER;
 
+    @JsonIgnore
+    private String password;
+
+    @JsonIgnore
+    private String username;
+
     /*
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(

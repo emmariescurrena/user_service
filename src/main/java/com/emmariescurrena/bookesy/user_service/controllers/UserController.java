@@ -17,7 +17,6 @@ import com.emmariescurrena.bookesy.user_service.services.UserService;
 
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("/users")
 public class UserController {

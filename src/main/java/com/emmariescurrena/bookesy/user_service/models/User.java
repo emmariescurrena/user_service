@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
+import com.emmariescurrena.bookesy.user_service.util.RegexValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -21,6 +22,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -38,18 +43,27 @@ public class User implements UserDetails {
     private String auth0UserId;
 
     @Column(nullable = false, unique = true)
+    @NotEmpty(message = "The email is required")
+    @Email(regexp = RegexValidator.EMAIL,
+            flags = Pattern.Flag.CASE_INSENSITIVE,
+            message = "Invalid email format")
     private String email;
 
     @Column(nullable = false)
+    @NotEmpty(message = "The name is required")
+    @Size(min = 2, max = 100, message = "The length of name must be between 2 and 100 characters")
     private String name;
 
     @Column(nullable = false)
+    @NotEmpty(message = "The surname is required")
+    @Size(min = 2, max = 100, message = "The length of surname must be between 2 and 100 characters")
     private String surname;
 
     @Column(name = "creation_date", updatable = false)
     @CreationTimestamp
     private Date creationDate;
 
+    @Size(max = 1000, message = "The maximum length of bio is 1000 characters")
     private String bio;
 
     @Column(nullable = false)

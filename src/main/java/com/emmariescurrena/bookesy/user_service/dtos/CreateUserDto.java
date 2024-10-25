@@ -10,8 +10,6 @@ import lombok.Data;
 
 @Data
 public class CreateUserDto {
-
-    private String auth0UserId;
     
     @NotEmpty(message = "The email is required")
     @Email(regexp = RegexValidator.EMAIL,
@@ -19,15 +17,9 @@ public class CreateUserDto {
             message = "Invalid email format")
     private String email;
 
-    @NotEmpty(message = "The name is required")
-    @Size(min = 2, max = 100, message = "The length of name must be between 2 and 100 characters")
-    private String name;
+    @NotEmpty(message = "The username is required")
+    @Size(min = 2, max = 15, message = "The length of name must be between 2 and 15 characters")
+    private String username;
 
-    @NotEmpty(message = "The surname is required")
-    @Size(min = 2, max = 100, message = "The length of surname must be between 2 and 100 characters")
-    private String surname;
-
-    @Size(max = 1000, message = "The maximum length of bio is 1000 characters")
-    private String bio;
 
 }

@@ -2,9 +2,12 @@ package com.emmariescurrena.bookesy.user_service.services;
 
 import java.util.Optional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
+import com.emmariescurrena.bookesy.user_service.dtos.UpdateUserDto;
 import com.emmariescurrena.bookesy.user_service.exceptions.EmailAlreadyExistsException;
 import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.repositories.UserRepository;
@@ -15,12 +18,15 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
 
-    public User createUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already registered: " + user.getEmail());
+    public User createUser(CreateUserDto userDto) {
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new EmailAlreadyExistsException("Email already registered: " + userDto.getEmail());
         }
 
-        return userRepository.save(user);
+        User newUser = new User();
+        BeanUtils.copyProperties(userDto, newUser);
+
+        return userRepository.save(newUser);
     }
 
     public Optional<User> getUserById(Long id) {
@@ -31,19 +37,8 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public User updateUser(Long userId, User updatedUser) {
-        User userToUpdate = userRepository.getReferenceById(userId);
-
-        Optional<String> updatedEmail = Optional.of(updatedUser.getEmail());
-        if (updatedEmail.isPresent()) {
-            userToUpdate.setEmail(updatedEmail.get());
-        }
-
-        Optional<String> updatedBio = Optional.of(updatedUser.getBio());
-        if (updatedBio.isPresent()) {
-            userToUpdate.setBio(updatedBio.get());
-        }
-
+    public User updateUser(User userToUpdate, UpdateUserDto userDto) {
+        BeanUtils.copyProperties(userDto, userToUpdate);
         return userRepository.save(userToUpdate);
     }
 

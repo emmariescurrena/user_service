@@ -10,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.util.RegexValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -39,7 +38,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "auth0_user_id", nullable = false, unique = true)
+    @Column(name = "auth0_user_id", unique = true)
     private String auth0UserId;
 
     @Column(nullable = false, unique = true)
@@ -50,12 +49,12 @@ public class User implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    @NotEmpty(message = "The name is required")
+    @Size(min = 2, max = 15, message = "The length of username must be between 2 and 15 characters")
+    private String username;
+
     @Size(min = 2, max = 100, message = "The length of name must be between 2 and 100 characters")
     private String name;
 
-    @Column(nullable = false)
-    @NotEmpty(message = "The surname is required")
     @Size(min = 2, max = 100, message = "The length of surname must be between 2 and 100 characters")
     private String surname;
 
@@ -73,8 +72,6 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
 
-    @JsonIgnore
-    private String username;
 
     /*
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -134,12 +131,5 @@ public class User implements UserDetails {
         return true;
     }
 
-    public User(CreateUserDto userDto) {
-        this.auth0UserId = userDto.getAuth0UserId();
-        this.email = userDto.getEmail();
-        this.name = userDto.getName();
-        this.surname = userDto.getSurname();
-        this.bio = userDto.getBio();
-    }
 
 }

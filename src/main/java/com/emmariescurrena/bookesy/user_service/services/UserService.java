@@ -25,6 +25,7 @@ public class UserService {
 
         User newUser = new User();
         BeanUtils.copyProperties(userDto, newUser);
+        newUser.setUsername(newUser.getEmail().split("@")[0]);
 
         return userRepository.save(newUser);
     }

@@ -38,18 +38,17 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "auth0_user_id", unique = true)
-    private String auth0UserId;
-
     @Column(nullable = false, unique = true)
     @NotEmpty(message = "The email is required")
+    @Size(max = 320, message = "The max length of email must be 320 characters")
     @Email(regexp = RegexValidator.EMAIL,
             flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "Invalid email format")
     private String email;
 
     @Column(nullable = false)
-    @Size(min = 2, max = 15, message = "The length of username must be between 2 and 15 characters")
+    @Size(max = 255, message = "The length of username must be between 1 and 255 characters")
+    @NotEmpty(message = "The username is required")
     private String username;
 
     @Size(min = 2, max = 100, message = "The length of name must be between 2 and 100 characters")
@@ -100,11 +99,6 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return null;
-    }
-
-    @Override
-    public String getUsername() {
-        return getEmail();
     }
 
     @Override

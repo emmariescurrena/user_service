@@ -71,17 +71,6 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
 
-
-    /*
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-        name = "user_config_preferences",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "config_preference_id")
-    )
-    private Set<ConfigPreference> configPreferences;
-    */
-
     public User setRole(RoleEnum role) {
         this.role = role;
 

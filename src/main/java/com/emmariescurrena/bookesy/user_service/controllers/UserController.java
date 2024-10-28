@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +30,6 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    
 
     @Autowired
     UserService userService;
@@ -39,6 +39,7 @@ public class UserController {
     public User createUser(@Valid @RequestBody CreateUserDto userDto) {
         return userService.createUser(userDto);
     }
+
 
     @GetMapping("/byUsername/{username}")
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
@@ -59,7 +60,8 @@ public class UserController {
         Authentication authentication
     ) {
         Optional<User> optionalUserToUpdate = userService.getUserByUsername(username);
-        return updateUser(optionalUserToUpdate, userDto, authentication);
+        User userToUpdate = getUserFromOptional(optionalUserToUpdate);
+        return updateUser(userToUpdate, userDto, authentication);
     }
 
     @PatchMapping("/byEmail/{email}")
@@ -70,27 +72,38 @@ public class UserController {
         Authentication authentication
     ) {
         Optional<User> optionalUserToUpdate = userService.getUserByEmail(email);
-        return updateUser(optionalUserToUpdate, userDto, authentication);
+        User userToUpdate = getUserFromOptional(optionalUserToUpdate);
+        return updateUser(userToUpdate, userDto, authentication);
     }
 
-    private User updateUser(Optional<User> optionalUserToUpdate, UpdateUserDto userDto, Authentication authentication) {
-        if (optionalUserToUpdate.isEmpty()) {
-            throw new NotFoundException("User for update not found");
+
+    private User updateUser(User userToUpdate, UpdateUserDto userDto, Authentication authentication) {
+        if (!havePermission(userToUpdate, authentication)) {
+            throw new AccessDeniedException("You don't have the permission to update this user");
         }
+        return userService.updateUser(userToUpdate, userDto);
+    }
 
-        User userToUpdate = optionalUserToUpdate.get();
 
+    private Boolean havePermission(User userToModify, Authentication authentication) {
         Jwt jwt = (Jwt) authentication.getPrincipal();
         Long currentUserId = (Long) jwt.getClaim("sub");
 
         Boolean isAdmin = authentication.getAuthorities().stream()
             .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(RoleEnum.SUPER_ADMIN.toString()));
 
-        if (!userToUpdate.getId().equals(currentUserId) && !isAdmin) {
-            throw new AccessDeniedException("You don't have the permission to update this user");
+        if (!userToModify.getId().equals(currentUserId) && !isAdmin) {
+            return false;
         }
 
-        return userService.updateUser(userToUpdate, userDto);
+        return true;
+    }
+
+    private User getUserFromOptional(Optional<User> optionalUser) {
+        if (optionalUser.isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
+        return optionalUser.get();
     }
 
 }

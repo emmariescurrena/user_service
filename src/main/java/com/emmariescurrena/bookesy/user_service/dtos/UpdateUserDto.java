@@ -16,9 +16,6 @@ public class UpdateUserDto {
             message = "Invalid email format")
     private String email;
 
-    @Size(max = 255, message = "The length of username must be between 1 and 255 characters")
-    private String username;
-
     @Size(min = 2, max = 100, message = "The length of name must be between 2 and 100 characters")
     private String name;
 

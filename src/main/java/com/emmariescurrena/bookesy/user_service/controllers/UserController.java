@@ -26,6 +26,7 @@ import com.emmariescurrena.bookesy.user_service.services.UserService;
 
 import jakarta.validation.Valid;
 
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -40,29 +41,9 @@ public class UserController {
         return userService.createUser(userDto);
     }
 
-
-    @GetMapping("/byUsername/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-        return ResponseEntity.of(userService.getUserByUsername(username));
-    }
-
     @GetMapping("/byEmail/{email}")
     public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
         return ResponseEntity.of(userService.getUserByEmail(email));
-    }
-
-
-    @PatchMapping("/byUsername/{username}")
-    @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or #username == currentUser.getUsername()")
-    public User updateUserByUsername(
-        @PathVariable String username,
-        @Valid @RequestBody UpdateUserDto userDto,
-        @AuthenticationPrincipal UserDetails currentUser
-    ) {
-        Optional<User> optionalUserToUpdate = userService.getUserByUsername(username);
-        User userToUpdate = getUserFromOptional(optionalUserToUpdate);
-        return updateUser(userToUpdate, userDto);
     }
 
     @PatchMapping("/byEmail/{email}")
@@ -78,18 +59,6 @@ public class UserController {
         return updateUser(userToUpdate, userDto);
     }
 
-
-    @DeleteMapping("/byUsername/{username}")
-    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or #username == currentUser.getUsername()")
-    public ResponseEntity<String> deleteUserByUsername(
-        @PathVariable String username,
-        @AuthenticationPrincipal UserDetails currentUser
-    ) {
-        Optional<User> optionalUserToDelete = userService.getUserByUsername(username);
-        User userToDelete = getUserFromOptional(optionalUserToDelete);
-        return deleteUser(userToDelete);
-    }
-
     @DeleteMapping("/byEmail/{email}")
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or #email == currentUser.getEmail()")
     public ResponseEntity<String> deleteUserByEmail(
@@ -100,6 +69,12 @@ public class UserController {
         User userToDelete = getUserFromOptional(optionalUserToDelete);
         return deleteUser(userToDelete);
     }
+
+    @GetMapping("/getAuthentication")
+    public String getMethodName(@AuthenticationPrincipal UserDetails currentUser) {
+        return currentUser.toString();
+    }
+    
 
     private User updateUser(User userToUpdate, UpdateUserDto userDto) {
         return userService.updateUser(userToUpdate, userDto);

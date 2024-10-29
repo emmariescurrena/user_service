@@ -27,12 +27,6 @@ public class GlobalExceptionHandler {
                     .stream().map(FieldError::getDefaultMessage).collect(Collectors.toList());
             errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), "Validation failed");
             errorDetail.setProperty("errors", errors);
-        } else if (exception instanceof EmailAlreadyExistsException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), exception.getMessage());
-            errorDetail.setProperty("errors", List.of("Email already registered"));
-        } else if (exception instanceof EmailNotRegisteredException) {
-            errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(401), exception.getMessage());
-            errorDetail.setProperty("description", "Email not registered");
         } else if (exception instanceof AccountStatusException) {
             errorDetail = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(403), exception.getMessage());
             errorDetail.setProperty("description", "The account is locked");

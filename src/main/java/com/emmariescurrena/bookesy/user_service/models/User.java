@@ -61,7 +61,11 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private RoleEnum role = RoleEnum.USER;
+
+    @JsonIgnore
+    private String username;
 
     @JsonIgnore
     private String password;

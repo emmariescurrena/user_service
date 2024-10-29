@@ -2,10 +2,13 @@ package com.emmariescurrena.bookesy.user_service.controllers;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,14 +34,21 @@ import jakarta.validation.Valid;
 @RequestMapping("/users")
 public class UserController {
 
+    Logger log = LoggerFactory.getLogger(UserController.class);
+
     @Autowired
     UserService userService;
 
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@Valid @RequestBody CreateUserDto userDto) {
-        return userService.createUser(userDto);
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserDto userDto) {
+        Optional<User> existingUser = userService.getUserByEmail(userDto.getEmail());
+        
+        if (existingUser.isPresent()) {
+            return ResponseEntity.ok("User already exists");
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
     }
 
     @GetMapping("/byEmail/{email}")
@@ -71,8 +81,10 @@ public class UserController {
     }
 
     @GetMapping("/getAuthentication")
-    public String getMethodName(@AuthenticationPrincipal UserDetails currentUser) {
-        return currentUser.toString();
+    public void getAuthentication(@AuthenticationPrincipal Object authPrinc, Authentication authentication, @AuthenticationPrincipal(errorOnInvalidType=true) UserDetails userDetails) {
+        log.info(authPrinc.toString());
+        log.info(authentication.toString());
+        log.info(userDetails.toString());
     }
     
 

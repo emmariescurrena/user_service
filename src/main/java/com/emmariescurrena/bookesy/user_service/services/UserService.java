@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.dtos.UpdateUserDto;
-import com.emmariescurrena.bookesy.user_service.exceptions.EmailAlreadyExistsException;
 import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.repositories.UserRepository;
 
@@ -19,10 +18,6 @@ public class UserService {
     UserRepository userRepository;
 
     public User createUser(CreateUserDto userDto) {
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already registered: " + userDto.getEmail());
-        }
-
         User newUser = new User();
         BeanUtils.copyProperties(userDto, newUser);
 

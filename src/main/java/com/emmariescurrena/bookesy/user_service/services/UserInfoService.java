@@ -6,7 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import com.emmariescurrena.bookesy.user_service.models.UserInfo;
+
 
 @Service
 public class UserInfoService {
@@ -17,28 +18,29 @@ public class UserInfoService {
     @Value("${okta.oauth2.client-secret}")
     private String clientSecret;
     
-    @Value("${okta.oaoth2.issuer}")
-    private static String domain;
+    @Value("${okta.oauth2.issuer}")
+    private String domain;
         
-    private static final String USERINFO_ENDPOINT = domain + "/userinfo";
-    
     @Autowired
     private WebClient.Builder webClientBuilder;
 
     public UserInfo getUserInfo(String accessToken) {
-        return webClientBuilder
-            .build()
+        WebClient webClient = webClientBuilder.build();
+        
+        UserInfo userInfo = webClient
             .get()
-            .uri(USERINFO_ENDPOINT)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .uri(domain + "userinfo")
+            .header(HttpHeaders.AUTHORIZATION, accessToken)
             .retrieve()
             .bodyToMono(UserInfo.class)
             .block();
+
+        return userInfo;
     }
 
     public String getEmail(String accessToken) {
         UserInfo userInfo = getUserInfo(accessToken);
-        return userInfo.getEmailAddress();
+        return userInfo.getEmail();
     }
 
 }

@@ -50,14 +50,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
     }
 
-    @GetMapping("/byEmail/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+    @GetMapping("/{email}")
+    public ResponseEntity<User> getUser(@PathVariable String email) {
         return ResponseEntity.of(userService.getUserByEmail(email));
     }
 
-    @PatchMapping("/byEmail/{email}")
+    @PatchMapping("/{email}")
     @ResponseStatus(HttpStatus.OK)
-    public User updateUserByEmail(
+    public User updateUser(
         @PathVariable String email,
         @Valid @RequestBody UpdateUserDto userDto,
         @RequestHeader("Authorization") String accessToken
@@ -74,8 +74,8 @@ public class UserController {
         return userService.updateUser(userToUpdate, userDto);
     }
 
-    @DeleteMapping("/byEmail/{email}")
-    public ResponseEntity<String> deleteUserByEmail(
+    @DeleteMapping("/{email}")
+    public ResponseEntity<String> deleteUser(
         @PathVariable String email,
         @RequestHeader("Authorization") String accessToken
     ) {

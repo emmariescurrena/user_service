@@ -46,11 +46,8 @@ public class User implements UserDetails {
             message = "Invalid email format")
     private String email;
 
-    @Size(min = 2, max = 100, message = "The length of name must be between 2 and 100 characters")
-    private String name;
-
-    @Size(min = 2, max = 100, message = "The length of surname must be between 2 and 100 characters")
-    private String surname;
+    @Size(min = 2, max = 100, message = "The length of nickname must be between 2 and 100 characters")
+    private String nickname;
 
     @Column(name = "creation_date", updatable = false)
     @CreationTimestamp

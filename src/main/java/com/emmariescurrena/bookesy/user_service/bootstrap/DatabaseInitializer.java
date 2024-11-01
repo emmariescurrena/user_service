@@ -19,11 +19,8 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
     @Autowired
     UserService userService;
 
-    @Value("${super-admin.name}")
-    private String superAdminName;
-
-    @Value("${super-admin.surname}")
-    private String superAdminSurname;
+    @Value("${super-admin.nickname}")
+    private String superAdminNickname;
 
     @Value("${super-admin.email}")
     private String superAdminEmail;
@@ -38,8 +35,7 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         CreateUserDto userDto = new CreateUserDto();
 
         userDto.setEmail(superAdminEmail);
-        userDto.setName(superAdminName);
-        userDto.setSurname(superAdminSurname);
+        userDto.setNickname(superAdminNickname);
 
         Optional<User> optionalUser = userService.getUserByEmail(userDto.getEmail());
 

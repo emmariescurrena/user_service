@@ -39,6 +39,10 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @NotEmpty(message = "The auth0UserId is required")
+    private String auth0UserId;
+
+    @Column(nullable = false, unique = true)
     @NotEmpty(message = "The email is required")
     @Size(max = 320, message = "The max length of email must be 320 characters")
     @Email(regexp = RegexValidator.EMAIL,

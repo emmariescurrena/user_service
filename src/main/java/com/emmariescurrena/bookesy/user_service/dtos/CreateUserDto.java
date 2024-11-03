@@ -2,6 +2,7 @@ package com.emmariescurrena.bookesy.user_service.dtos;
 
 import com.emmariescurrena.bookesy.user_service.util.RegexValidator;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +12,10 @@ import lombok.Data;
 @Data
 public class CreateUserDto {
     
+    @Column(nullable = false, unique = true)
+    @NotEmpty(message = "The auth0UserId is required")
+    private String auth0UserId;
+
     @NotEmpty(message = "The email is required")
     @Email(regexp = RegexValidator.EMAIL,
             flags = Pattern.Flag.CASE_INSENSITIVE,

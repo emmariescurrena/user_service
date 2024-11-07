@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.dtos.UpdateUserDto;
+import com.emmariescurrena.bookesy.user_service.models.RoleEnum;
 import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.repositories.UserRepository;
 
@@ -20,6 +21,14 @@ public class UserService {
     public User createUser(CreateUserDto userDto) {
         User newUser = new User();
         BeanUtils.copyProperties(userDto, newUser);
+
+        return userRepository.save(newUser);
+    }
+
+    public User createSuperAdmin(CreateUserDto userDto) {
+        User newUser = new User();
+        BeanUtils.copyProperties(userDto, newUser);
+        newUser.setRole(RoleEnum.SUPER_ADMIN);
 
         return userRepository.save(newUser);
     }

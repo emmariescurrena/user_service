@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.emmariescurrena.bookesy.user_service.enums.ConfigPreferenceEnum;
 import com.emmariescurrena.bookesy.user_service.models.ConfigPreference;
-import com.emmariescurrena.bookesy.user_service.models.ConfigPreferenceEnum;
 import com.emmariescurrena.bookesy.user_service.repositories.ConfigPreferenceRepository;
 
 @Service

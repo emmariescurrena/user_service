@@ -29,7 +29,7 @@ public class MyBookshelf {
     @Column(name = "book_id", nullable = false)
     private String bookId;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private BookStatusEnum status;
 

@@ -24,7 +24,7 @@ public class ConfigPreferenceService {
     }
 
     @Transactional
-    public void upsertConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
+    public ConfigPreference upsertConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
         ConfigPreference configPreference = configPreferenceRepository
                 .findByUserIdAndName(userId, preferenceName)
                 .orElse(null);
@@ -36,7 +36,7 @@ public class ConfigPreferenceService {
         }
 
         configPreference.setValue(value);
-        configPreferenceRepository.save(configPreference);
+        return configPreferenceRepository.save(configPreference);
     }
 
 

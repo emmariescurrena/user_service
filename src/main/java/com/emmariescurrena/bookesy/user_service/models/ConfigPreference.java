@@ -24,7 +24,7 @@ public class ConfigPreference {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ConfigPreferencesEnum name;
+    private ConfigPreferenceEnum name;
 
     @Column(nullable = false)
     private String value;

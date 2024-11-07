@@ -1,13 +1,11 @@
 package com.emmariescurrena.bookesy.user_service.controllers;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,11 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.dtos.UpdateUserDto;
-import com.emmariescurrena.bookesy.user_service.exceptions.NotFoundException;
 import com.emmariescurrena.bookesy.user_service.models.User;
-import com.emmariescurrena.bookesy.user_service.models.UserInfo;
 import com.emmariescurrena.bookesy.user_service.services.UserInfoService;
 import com.emmariescurrena.bookesy.user_service.services.UserService;
+import com.emmariescurrena.bookesy.user_service.util.ControllerHelper;
 
 import jakarta.validation.Valid;
 
@@ -63,13 +60,11 @@ public class UserController {
         @Valid @RequestBody UpdateUserDto userDto,
         @RequestHeader("Authorization") String accessToken
     ) {
-        Optional<User> optionalUserToUpdate = userService.getUserByEmail(email);
-        User userToUpdate = getUserFromOptional(optionalUserToUpdate);
+        User userToUpdate = ControllerHelper.getUserFromOptional(userService.getUserByEmail(email));
 
-        UserInfo currentUserInfo = userInfoService.getUserInfo(accessToken);
-        User currentUser = userService.getUserByEmail(currentUserInfo.getEmail()).get();
+        User currentUser = ControllerHelper.getCurrentUser(accessToken);
 
-        if (!havePermission(userToUpdate, currentUser)) {
+        if (!ControllerHelper.hasPermission(userToUpdate, currentUser)) {
             throw new AccessDeniedException("You don't have the permission to update this user");
         }
 
@@ -82,13 +77,11 @@ public class UserController {
         @PathVariable String email,
         @RequestHeader("Authorization") String accessToken
     ) {
-        Optional<User> optionalUserToDelete = userService.getUserByEmail(email);
-        User userToDelete = getUserFromOptional(optionalUserToDelete);
+        User userToDelete = ControllerHelper.getUserFromOptional(userService.getUserByEmail(email));
 
-        UserInfo currentUserInfo = userInfoService.getUserInfo(accessToken);
-        User currentUser = userService.getUserByEmail(currentUserInfo.getEmail()).get();
+        User currentUser = ControllerHelper.getCurrentUser(accessToken);
 
-        if (!havePermission(userToDelete, currentUser)) {
+        if (!ControllerHelper.hasPermission(userToDelete, currentUser)) {
             throw new AccessDeniedException("You don't have the permission to delete this user");
         }
 
@@ -96,21 +89,6 @@ public class UserController {
         userService.deleteUser(userToDelete);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted");
-    }
-
-    private User getUserFromOptional(Optional<User> optionalUser) {
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("User not found");
-        }
-        return optionalUser.get();
-    }
-
-    private Boolean havePermission(User userToModify, User currentUser) {
-        if (!userToModify.getId().equals(currentUser.getId()) &&
-                !currentUser.getAuthorities().equals(List.of(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN")))) {
-            return false;
-        }
-        return true;
     }
 
 }

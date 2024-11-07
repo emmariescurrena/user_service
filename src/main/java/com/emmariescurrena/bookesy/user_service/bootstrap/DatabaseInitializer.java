@@ -17,7 +17,7 @@ import com.emmariescurrena.bookesy.user_service.services.UserService;
 public class DatabaseInitializer implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @Value("${super-admin.nickname}")
     private String superAdminNickname;
@@ -25,17 +25,20 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
     @Value("${super-admin.email}")
     private String superAdminEmail;
 
+    @Value("${super-admin.auth0-user-id}")
+    private String superAdminAuth0UserId;
+
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent contextRefreshedEvent) {
-        this.createSuperAdministrator();
+        createSuperAdministrator();
     }
 
     private void createSuperAdministrator() {
-
         CreateUserDto userDto = new CreateUserDto();
 
         userDto.setEmail(superAdminEmail);
         userDto.setNickname(superAdminNickname);
+        userDto.setAuth0UserId(superAdminAuth0UserId);
 
         Optional<User> optionalUser = userService.getUserByEmail(userDto.getEmail());
 
@@ -43,8 +46,7 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
             return;
         }
 
-        userService.createUser(userDto);
-
+        userService.createSuperAdmin(userDto);
     }
 
 }

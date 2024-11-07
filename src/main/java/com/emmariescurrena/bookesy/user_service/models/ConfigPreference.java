@@ -1,5 +1,7 @@
 package com.emmariescurrena.bookesy.user_service.models;
 
+import com.emmariescurrena.bookesy.user_service.enums.ConfigPreferenceEnum;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

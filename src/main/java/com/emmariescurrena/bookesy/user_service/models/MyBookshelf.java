@@ -1,5 +1,7 @@
 package com.emmariescurrena.bookesy.user_service.models;
 
+import com.emmariescurrena.bookesy.user_service.enums.BookStatusEnum;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

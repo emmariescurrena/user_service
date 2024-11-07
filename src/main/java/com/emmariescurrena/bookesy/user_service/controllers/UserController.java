@@ -1,12 +1,12 @@
 package com.emmariescurrena.bookesy.user_service.controllers;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +62,7 @@ public class UserController {
         @PathVariable String email,
         @Valid @RequestBody UpdateUserDto userDto,
         @RequestHeader("Authorization") String accessToken
-    ) throws AccessDeniedException {
+    ) {
         Optional<User> optionalUserToUpdate = userService.getUserByEmail(email);
         User userToUpdate = getUserFromOptional(optionalUserToUpdate);
 
@@ -81,7 +81,7 @@ public class UserController {
     public ResponseEntity<String> deleteUser(
         @PathVariable String email,
         @RequestHeader("Authorization") String accessToken
-    ) throws AccessDeniedException {
+    ) {
         Optional<User> optionalUserToDelete = userService.getUserByEmail(email);
         User userToDelete = getUserFromOptional(optionalUserToDelete);
 

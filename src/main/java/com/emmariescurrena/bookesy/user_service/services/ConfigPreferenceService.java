@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.emmariescurrena.bookesy.user_service.dtos.UpsertConfigPreferenceDto;
 import com.emmariescurrena.bookesy.user_service.enums.ConfigPreferenceEnum;
 import com.emmariescurrena.bookesy.user_service.models.ConfigPreference;
 import com.emmariescurrena.bookesy.user_service.repositories.ConfigPreferenceRepository;
@@ -24,7 +25,25 @@ public class ConfigPreferenceService {
     }
 
     @Transactional
-    public ConfigPreference upsertConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
+    public List<ConfigPreference> upsertConfigPreferences(Long userId, UpsertConfigPreferenceDto dto) {
+        
+        if (dto.getNotification() != null) {
+            upsertSingleConfigPreference(userId, ConfigPreferenceEnum.NOTIFICATION, dto.getNotification());
+        }
+
+        if (dto.getTheme() != null) {
+            upsertSingleConfigPreference(userId, ConfigPreferenceEnum.THEME, dto.getTheme());
+        }
+
+        if (dto.getLanguage() != null) {
+            upsertSingleConfigPreference(userId, ConfigPreferenceEnum.LANGUAGE, dto.getLanguage());
+        }
+
+        return getConfigPreferences(userId);
+
+    }
+
+    private ConfigPreference upsertSingleConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
         ConfigPreference configPreference = configPreferenceRepository
                 .findByUserIdAndName(userId, preferenceName)
                 .orElse(null);

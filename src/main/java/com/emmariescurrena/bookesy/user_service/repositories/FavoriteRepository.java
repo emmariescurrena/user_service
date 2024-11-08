@@ -11,5 +11,5 @@ import com.emmariescurrena.bookesy.user_service.models.Recommendation;
 
 @Repository
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
-    List<Recommendation> findByUser_Id(Long userId);
+    List<Recommendation> findByUserId(Long userId);
 }

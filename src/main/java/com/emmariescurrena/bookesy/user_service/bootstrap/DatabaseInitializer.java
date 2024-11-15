@@ -28,9 +28,19 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
     @Value("${super-admin.auth0-user-id}")
     private String superAdminAuth0UserId;
 
+    @Value("${regular-user.nickname}")
+    private String regularUserNickname;
+
+    @Value("${regular-user.email}")
+    private String regularUserEmail;
+
+    @Value("${regular-user.auth0-user-id}")
+    private String regularUserAuth0UserId;
+
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent contextRefreshedEvent) {
         createSuperAdministrator();
+        createRegularUser();
     }
 
     private void createSuperAdministrator() {
@@ -47,6 +57,22 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         }
 
         userService.createSuperAdmin(userDto);
+    }
+
+    private void createRegularUser() {
+        CreateUserDto userDto = new CreateUserDto();
+
+        userDto.setEmail(regularUserEmail);
+        userDto.setNickname(regularUserNickname);
+        userDto.setAuth0UserId(regularUserAuth0UserId);
+
+        Optional<User> optionalUser = userService.getUserByEmail(userDto.getEmail());
+
+        if (optionalUser.isPresent()) {
+            return;
+        }
+
+        userService.createUser(userDto);
     }
 
 }

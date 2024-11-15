@@ -41,6 +41,10 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public Optional<User> getUserByAuth0UserId(String auth0UserId) {
+        return userRepository.findByAuth0UserId(auth0UserId);
+    }
+
     public User updateUser(User userToUpdate, UpdateUserDto userDto) {
         BeanUtils.copyProperties(userDto, userToUpdate);
         return userRepository.save(userToUpdate);

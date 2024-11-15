@@ -1,6 +1,7 @@
 package com.emmariescurrena.bookesy.user_service.models;
 
 import com.emmariescurrena.bookesy.user_service.enums.ConfigPreferenceEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +21,7 @@ import lombok.Data;
 @Table(name = "CONFIG_PREFERENCES")
 public class ConfigPreference {
 
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,6 +33,7 @@ public class ConfigPreference {
     @Column(nullable = false)
     private String value;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;

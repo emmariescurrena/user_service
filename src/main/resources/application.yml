@@ -10,6 +10,13 @@ spring:
       ddl-auto: update
     open-in-view: false
 
+okta:
+  oauth2:
+    issuer: ${ISSUER_URI}
+    client-id: ${CLIENT_ID}
+    client-secret: ${CLIENT_SECRET}
+    audience: ${ISSUER_URI}api/v2/
+
 server:
   port: 8081
 
@@ -17,3 +24,19 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
+
+super-admin:
+  nickname: ${SUPER_ADMIN_NICKNAME}
+  email: ${SUPER_ADMIN_EMAIL}
+  auth0-user-id: ${SUPER_ADMIN_AUTH0_USER_ID}
+
+regular-user:
+  nickname: ${REGULAR_USER_NICKNAME}
+  email: ${REGULAR_USER_EMAIL}
+  auth0-user-id: ${REGULAR_USER_AUTH0_USER_ID}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

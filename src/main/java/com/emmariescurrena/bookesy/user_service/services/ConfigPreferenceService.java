@@ -1,7 +1,5 @@
 package com.emmariescurrena.bookesy.user_service.services;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +8,9 @@ import com.emmariescurrena.bookesy.user_service.dtos.UpsertConfigPreferenceDto;
 import com.emmariescurrena.bookesy.user_service.enums.ConfigPreferenceEnum;
 import com.emmariescurrena.bookesy.user_service.models.ConfigPreference;
 import com.emmariescurrena.bookesy.user_service.repositories.ConfigPreferenceRepository;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class ConfigPreferenceService {
@@ -20,12 +21,12 @@ public class ConfigPreferenceService {
     @Autowired
     UserService userService;
     
-    public List<ConfigPreference> getConfigPreferences(Long userId) {
-        return configPreferenceRepository.findByUserId(userId);
+    public Flux<ConfigPreference> getConfigPreferences(Long userId) {
+        return Flux.fromIterable(configPreferenceRepository.findByUserId(userId));
     }
 
     @Transactional
-    public List<ConfigPreference> upsertConfigPreferences(Long userId, UpsertConfigPreferenceDto dto) {
+    public Flux<ConfigPreference> upsertConfigPreferences(Long userId, UpsertConfigPreferenceDto dto) {
         
         if (dto.getNotification() != null) {
             upsertSingleConfigPreference(userId, ConfigPreferenceEnum.NOTIFICATION, dto.getNotification());
@@ -43,20 +44,26 @@ public class ConfigPreferenceService {
 
     }
 
-    private ConfigPreference upsertSingleConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
-        ConfigPreference configPreference = configPreferenceRepository
-                .findByUserIdAndName(userId, preferenceName)
-                .orElse(null);
-                
-        if (configPreference == null) {
-            configPreference = new ConfigPreference();
-            configPreference.setUser(userService.getUserById(userId).get());
-            configPreference.setName(preferenceName);
-        }
-
-        configPreference.setValue(value);
-        return configPreferenceRepository.save(configPreference);
+    private Mono<ConfigPreference> upsertSingleConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
+        return Mono.fromCallable(() -> configPreferenceRepository.findByUserIdAndName(userId, preferenceName).orElse(null))
+            .flatMap(configPreference -> {
+                if (configPreference == null) {
+                    return userService.getUserById(userId)
+                        .flatMap(user -> {
+                            ConfigPreference newPreference = new ConfigPreference();
+                            newPreference.setUser(user);
+                            newPreference.setName(preferenceName);
+                            newPreference.setValue(value);
+                            return Mono.just(newPreference);
+                        });
+                }
+                return Mono.just(configPreference);
+            })
+            .flatMap(existingOrNewPreference -> {
+                existingOrNewPreference.setValue(value);
+                return Mono.just(configPreferenceRepository.save(existingOrNewPreference));
+            });
     }
-
+    
 
 }

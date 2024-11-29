@@ -1,12 +1,13 @@
 package com.emmariescurrena.bookesy.user_service.util;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.emmariescurrena.bookesy.user_service.exceptions.NotFoundException;
 import com.emmariescurrena.bookesy.user_service.models.User;
+
+import reactor.core.publisher.Mono;
 
 
 public class ControllerHelper {
@@ -19,11 +20,10 @@ public class ControllerHelper {
         return true;
     }
 
-    public static User getUserFromOptional(Optional<User> optionalUser) {
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("User not found");
-        }
-        return optionalUser.get();
+    public static Mono<User> getUserFromMono(Mono<User> userMono) {
+        return userMono.switchIfEmpty(
+            Mono.error(new NotFoundException("User not found"))
+        );
     }
 
 }

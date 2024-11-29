@@ -1,7 +1,5 @@
 package com.emmariescurrena.bookesy.user_service.bootstrap;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
@@ -10,8 +8,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
-import com.emmariescurrena.bookesy.user_service.models.User;
 import com.emmariescurrena.bookesy.user_service.services.UserService;
+
+import reactor.core.publisher.Mono;
 
 @Component
 public class DatabaseInitializer implements ApplicationListener<ContextRefreshedEvent> {
@@ -50,13 +49,13 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         userDto.setNickname(superAdminNickname);
         userDto.setAuth0UserId(superAdminAuth0UserId);
 
-        Optional<User> optionalUser = userService.getUserByEmail(userDto.getEmail());
-
-        if (optionalUser.isPresent()) {
-            return;
-        }
-
-        userService.createSuperAdmin(userDto);
+        userService.getUserByEmail(userDto.getEmail())
+        .flatMap(existingUser -> {
+            return Mono.empty();
+        })
+        .switchIfEmpty(
+            userService.createSuperAdmin(userDto)
+        );
     }
 
     private void createRegularUser() {
@@ -66,13 +65,14 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         userDto.setNickname(regularUserNickname);
         userDto.setAuth0UserId(regularUserAuth0UserId);
 
-        Optional<User> optionalUser = userService.getUserByEmail(userDto.getEmail());
-
-        if (optionalUser.isPresent()) {
-            return;
-        }
-
-        userService.createUser(userDto);
+        userService.getUserByEmail(regularUserEmail)
+        .flatMap(existingUser -> {
+            return Mono.empty();
+        })
+        .switchIfEmpty(
+            userService.createUser(userDto)
+        )
+        .subscribe();
     }
 
 }

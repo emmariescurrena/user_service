@@ -7,7 +7,7 @@ spring:
     password: ${USER_DB_POSTGRES_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     open-in-view: false
 
 okta:

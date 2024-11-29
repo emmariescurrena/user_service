@@ -1,7 +1,5 @@
 package com.emmariescurrena.bookesy.user_service.controllers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +22,8 @@ import com.emmariescurrena.bookesy.user_service.services.UserService;
 import com.emmariescurrena.bookesy.user_service.util.ControllerHelper;
 
 import jakarta.validation.Valid;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 
 
@@ -41,39 +41,44 @@ public class ConfigPreferenceController {
     UserDetailsService userDetailsService;
 
     @GetMapping("/{email}")
-    public List<ConfigPreference> getConfigPreferences(
+    public Flux<ConfigPreference> getConfigPreferences(
         @PathVariable String email,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        User userToGetPreferences = ControllerHelper.getUserFromOptional(userService.getUserByEmail(email));
-
-        User currentUser = (User) userDetailsService.loadUserByUsername(accessToken.getSubject());
-
-        if (!ControllerHelper.hasPermission(userToGetPreferences, currentUser)) {
-            throw new AccessDeniedException("You don't have the permission to update this user preferences");
-        }
-
-        return configPreferenceService.getConfigPreferences(userToGetPreferences.getId());
+        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
+            .flatMapMany(userToGetPreferences ->
+                Mono.justOrEmpty((User) userDetailsService.loadUserByUsername(accessToken.getSubject()))
+                    .flatMapMany(currentUser -> {
+                        if (!ControllerHelper.hasPermission(userToGetPreferences, currentUser)) {
+                            return Flux.error(new AccessDeniedException(
+                                "You don't have the permission to get this user preferences"));
+                        }
+                        return configPreferenceService.getConfigPreferences(userToGetPreferences.getId());
+                    })
+            );
     }
+
     
 
     @PutMapping("/{email}")
     @ResponseStatus(HttpStatus.OK)
-    public List<ConfigPreference> upsertConfigPreferences(
+    public Flux<ConfigPreference> upsertConfigPreferences(
         @PathVariable String email,
         @Valid @RequestBody UpsertConfigPreferenceDto preferenceDto,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        
-        User userToUpdate = ControllerHelper.getUserFromOptional(userService.getUserByEmail(email));
-
-        User currentUser = (User) userDetailsService.loadUserByUsername(accessToken.getSubject());
-
-        if (!ControllerHelper.hasPermission(userToUpdate, currentUser)) {
-            throw new AccessDeniedException("You don't have the permission to update this user preferences");
-        }
-
-        return configPreferenceService.upsertConfigPreferences(userToUpdate.getId(), preferenceDto);
+        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
+            .flatMapMany(userToGetPreferences ->
+                Mono.justOrEmpty((User) userDetailsService.loadUserByUsername(accessToken.getSubject()))
+                    .flatMapMany(currentUser -> {
+                        if (!ControllerHelper.hasPermission(userToGetPreferences, currentUser)) {
+                            return Flux.error(new AccessDeniedException(
+                                "You don't have the permission to update this user preferences"));
+                        }
+                        return configPreferenceService.upsertConfigPreferences(
+                            userToGetPreferences.getId(), preferenceDto);
+                    })
+            );
     }
 
 }

@@ -1,11 +1,14 @@
 package com.emmariescurrena.bookesy.user_service.models;
 
-
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,14 +16,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.emmariescurrena.bookesy.user_service.util.RegexValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -29,20 +28,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Entity
 @NoArgsConstructor
-@Table(name = "USERS")
+@Table("users")
 public class User implements UserDetails {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column("auth0user_id")
     @NotEmpty(message = "The auth0UserId is required")
     private String auth0UserId;
 
-    @Column(nullable = false, unique = true)
+    @Column("email")
     @NotEmpty(message = "The email is required")
     @Size(max = 320, message = "The max length of email must be 320 characters")
     @Email(regexp = RegexValidator.EMAIL,
@@ -50,26 +48,25 @@ public class User implements UserDetails {
             message = "Invalid email format")
     private String email;
 
-    @Column(unique = true)
     @Size(min = 2, max = 100, message = "The length of nickname must be between 2 and 100 characters")
     private String nickname;
 
-    @Column(name = "creation_date", updatable = false)
-    @CreationTimestamp
-    private Date creationDate;
+    @Column("creation_date")
+    @CreatedDate
+    private LocalDateTime creationDate;
 
     @Size(max = 1000, message = "The maximum length of bio is 1000 characters")
     private String bio;
 
-    @Column(nullable = false)
+    @Column("role")
     @Enumerated(EnumType.STRING)
     @JsonIgnore
     private RoleEnum role = RoleEnum.USER;
 
-    @JsonIgnore
+    @Transient
     private String username;
 
-    @JsonIgnore
+    @Transient
     private String password;
 
     public User setRole(RoleEnum role) {

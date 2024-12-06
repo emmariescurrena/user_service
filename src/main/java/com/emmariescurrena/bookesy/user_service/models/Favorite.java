@@ -1,30 +1,37 @@
 package com.emmariescurrena.bookesy.user_service.models;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Entity
-@Table(name = "FAVORITES")
+@NoArgsConstructor
+@AllArgsConstructor
+@Table("favorites")
 public class Favorite {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
+    @JsonIgnore
+    @Column("user_id")
+    private Long userId;
 
-    @Column(name = "book_id", nullable = false)
+    @Column("book_id")
     private String bookId;
+
+    public Favorite(Long userId, String bookId) {
+        setUserId(userId);
+        setBookId(bookId);
+    }
 
 }

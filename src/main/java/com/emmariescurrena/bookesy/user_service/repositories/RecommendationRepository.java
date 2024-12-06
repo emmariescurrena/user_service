@@ -1,14 +1,14 @@
 package com.emmariescurrena.bookesy.user_service.repositories;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.emmariescurrena.bookesy.user_service.models.Recommendation;
 
+import reactor.core.publisher.Flux;
+
 
 @Repository
-public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
-    List<Recommendation> findByUser_Id(Long userId);
+public interface RecommendationRepository extends ReactiveCrudRepository<Recommendation, Long> {
+    Flux<Recommendation> findByUserId(Long userId);
 }

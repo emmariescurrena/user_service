@@ -22,7 +22,7 @@ public class ConfigPreferenceService {
     UserService userService;
     
     public Flux<ConfigPreference> getConfigPreferences(Long userId) {
-        return Flux.fromIterable(configPreferenceRepository.findByUserId(userId));
+        return configPreferenceRepository.findByUserId(userId);
     }
 
     @Transactional
@@ -45,23 +45,16 @@ public class ConfigPreferenceService {
     }
 
     private Mono<ConfigPreference> upsertSingleConfigPreference(Long userId, ConfigPreferenceEnum preferenceName, String value) {
-        return Mono.fromCallable(() -> configPreferenceRepository.findByUserIdAndName(userId, preferenceName).orElse(null))
+        return configPreferenceRepository.findByUserIdAndName(userId, preferenceName)
+            .switchIfEmpty(Mono.defer(() -> {
+                ConfigPreference newPreference = new ConfigPreference();
+                newPreference.setUserId(userId);
+                newPreference.setName(preferenceName);
+                return Mono.just(newPreference);
+            }))
             .flatMap(configPreference -> {
-                if (configPreference == null) {
-                    return userService.getUserById(userId)
-                        .flatMap(user -> {
-                            ConfigPreference newPreference = new ConfigPreference();
-                            newPreference.setUser(user);
-                            newPreference.setName(preferenceName);
-                            newPreference.setValue(value);
-                            return Mono.just(newPreference);
-                        });
-                }
-                return Mono.just(configPreference);
-            })
-            .flatMap(existingOrNewPreference -> {
-                existingOrNewPreference.setValue(value);
-                return Mono.just(configPreferenceRepository.save(existingOrNewPreference));
+                configPreference.setValue(value);
+                return configPreferenceRepository.save(configPreference);
             });
     }
     

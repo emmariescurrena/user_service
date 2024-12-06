@@ -22,7 +22,7 @@ public class UserService {
         User newUser = new User();
         BeanUtils.copyProperties(userDto, newUser);
 
-        return Mono.just(userRepository.save(newUser));
+        return userRepository.save(newUser);
     }
 
     public Mono<User> createSuperAdmin(CreateUserDto userDto) {
@@ -30,28 +30,29 @@ public class UserService {
         BeanUtils.copyProperties(userDto, newUser);
         newUser.setRole(RoleEnum.SUPER_ADMIN);
 
-        return Mono.just(userRepository.save(newUser));
+        return userRepository.save(newUser);
     }
 
     public Mono<User> getUserById(Long id) {
-        return Mono.justOrEmpty(userRepository.findById(id));
+        return userRepository.findById(id);
     }
 
     public Mono<User> getUserByEmail(String email) {
-        return Mono.justOrEmpty(userRepository.findByEmail(email));
+        return userRepository.findByEmail(email);
     }
 
     public Mono<User> getUserByAuth0UserId(String auth0UserId) {
-        return Mono.justOrEmpty(userRepository.findByAuth0UserId(auth0UserId));
+        return userRepository.findByAuth0UserId(auth0UserId);
     }
 
     public Mono<User> updateUser(User userToUpdate, UpdateUserDto userDto) {
         BeanUtils.copyProperties(userDto, userToUpdate);
-        return Mono.just(userRepository.save(userToUpdate));
+        return userRepository.save(userToUpdate);
     }
 
-    public void deleteUser(User user) {
+    public Mono<Void> deleteUser(User user) {
         userRepository.delete(user);
+        return Mono.empty();
     }
 
 }

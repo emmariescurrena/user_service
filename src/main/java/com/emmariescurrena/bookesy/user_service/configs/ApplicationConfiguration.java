@@ -3,12 +3,15 @@ package com.emmariescurrena.bookesy.user_service.configs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.emmariescurrena.bookesy.user_service.repositories.UserRepository;
+
+import reactor.core.publisher.Mono;
 
 @Configuration
 public class ApplicationConfiguration {
@@ -17,17 +20,14 @@ public class ApplicationConfiguration {
     UserRepository userRepository;
 
     @Bean
-    UserDetailsService userDetailsService() {
+    public ReactiveUserDetailsService reactiveUserDetailsService() {
         return username -> userRepository.findByAuth0UserId(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            .map(user -> (UserDetails) user)
+            .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found")));
     }
 
     @Bean
-    AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-        authProvider.setUserDetailsService(userDetailsService());
-
-        return authProvider;
+    public ReactiveAuthenticationManager reactiveAuthenticationManager(ReactiveUserDetailsService reactiveUserDetailsService) {
+        return new UserDetailsRepositoryReactiveAuthenticationManager(reactiveUserDetailsService);
     }
 }

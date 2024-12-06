@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,25 +39,25 @@ public class UserController {
     private UserInfoService userInfoService;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private ReactiveUserDetailsService userDetailsService;
 
     @PostMapping
     public Mono<ResponseEntity<?>> createUser(@Valid @RequestBody CreateUserDto userDto) {
         return userService.getUserByEmail(userDto.getEmail())
-            .flatMap(existingUser ->
-                Mono.just(ResponseEntity.ok("User already exists"))
-            )
-            .flatMap(response ->
-                response.getStatusCode() == HttpStatus.OK ? Mono.just(response) :
-                userService.createUser(userDto).map(newUser -> ResponseEntity.ok(newUser))
-            );
+        .flatMap(_ ->
+            Mono.just(ResponseEntity.ok("User already exists"))
+        )
+        .flatMap(response ->
+            response.getStatusCode() == HttpStatus.OK ? Mono.just(response) :
+            userService.createUser(userDto).map(newUser -> ResponseEntity.ok(newUser))
+        );
     }
 
     @GetMapping("/{email}")
     public Mono<ResponseEntity<User>> getUser(@PathVariable String email) {
         return userService.getUserByEmail(email)
             .map(ResponseEntity::ok)
-            .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+            .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PatchMapping("/{email}")
@@ -67,18 +67,19 @@ public class UserController {
         @Valid @RequestBody UpdateUserDto userDto,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        return userService.getUserByEmail(email)
-            .flatMap(userToUpdate ->
-                Mono.justOrEmpty((User) userDetailsService.loadUserByUsername(accessToken.getSubject()))
-                .flatMap(currentUser -> {
-                    if (!ControllerHelper.hasPermission(userToUpdate, currentUser)) {
-                        return Mono.error(new AccessDeniedException("You don't have the permission to update this user"));
-                    }
-                    userInfoService.updateUser(userToUpdate.getAuth0UserId(), userDto);
-                    return userService.updateUser(userToUpdate, userDto)
+        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
+        .flatMap(userToUpdate ->
+            userDetailsService.findByUsername(accessToken.getSubject())
+            .flatMap(currentUser -> {
+                if (!ControllerHelper.hasPermission(userToUpdate, (User) currentUser)) {
+                    return Mono.error(new AccessDeniedException(
+                        "You don't have the permission to update this user"));
+                }
+                return userInfoService.updateUser(userToUpdate.getAuth0UserId(), userDto)
+                    .then(userService.updateUser(userToUpdate, userDto))
                     .map(updatedUser -> ResponseEntity.ok(updatedUser));
-                })
-            );
+            })
+        );
     }
 
     @DeleteMapping("/{email}")
@@ -86,19 +87,19 @@ public class UserController {
         @PathVariable String email,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        return userService.getUserByEmail(email)
-            .flatMap(userToDelete ->
-                Mono.justOrEmpty((User) userDetailsService.loadUserByUsername(accessToken.getSubject()))
+        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
+        .flatMap(userToDelete ->
+            userDetailsService.findByUsername(accessToken.getSubject())
                 .flatMap(currentUser -> {
-                    if (!ControllerHelper.hasPermission(userToDelete, currentUser)) {
-                        return Mono.error(new AccessDeniedException("You don't have the permission to delete this user"));
+                    if (!ControllerHelper.hasPermission(userToDelete, (User) currentUser)) {
+                        return Mono.error(new AccessDeniedException(
+                            "You don't have the permission to delete this user"));
                     }
-                    userInfoService.deleteUser(userToDelete.getAuth0UserId());
-                    userService.deleteUser(userToDelete);
-                    return Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted"));
+                    return userInfoService.deleteUser(userToDelete.getAuth0UserId())
+                        .then(userService.deleteUser(userToDelete))
+                        .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted"));
                 })
-            )
-            .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+        );
     }
 }
 

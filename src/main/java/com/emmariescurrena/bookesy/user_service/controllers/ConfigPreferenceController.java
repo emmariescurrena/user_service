@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +23,6 @@ import com.emmariescurrena.bookesy.user_service.util.ControllerHelper;
 
 import jakarta.validation.Valid;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 
 
@@ -38,7 +37,7 @@ public class ConfigPreferenceController {
     ConfigPreferenceService configPreferenceService;
 
     @Autowired
-    UserDetailsService userDetailsService;
+    private ReactiveUserDetailsService userDetailsService;
 
     @GetMapping("/{email}")
     public Flux<ConfigPreference> getConfigPreferences(
@@ -46,19 +45,17 @@ public class ConfigPreferenceController {
         @AuthenticationPrincipal Jwt accessToken
     ) {
         return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-            .flatMapMany(userToGetPreferences ->
-                Mono.justOrEmpty((User) userDetailsService.loadUserByUsername(accessToken.getSubject()))
-                    .flatMapMany(currentUser -> {
-                        if (!ControllerHelper.hasPermission(userToGetPreferences, currentUser)) {
-                            return Flux.error(new AccessDeniedException(
-                                "You don't have the permission to get this user preferences"));
-                        }
-                        return configPreferenceService.getConfigPreferences(userToGetPreferences.getId());
-                    })
-            );
+        .flatMapMany(userToGetPreferences -> {
+            return userDetailsService.findByUsername(accessToken.getSubject())
+            .flatMapMany(currentUser -> {
+                if (!ControllerHelper.hasPermission(userToGetPreferences, (User) currentUser)) {
+                    return Flux.error(new AccessDeniedException(
+                        "You don't have the permission to get this user preferences"));
+                }
+                return configPreferenceService.getConfigPreferences(userToGetPreferences.getId());
+            });
+        });
     }
-
-    
 
     @PutMapping("/{email}")
     @ResponseStatus(HttpStatus.OK)
@@ -68,17 +65,18 @@ public class ConfigPreferenceController {
         @AuthenticationPrincipal Jwt accessToken
     ) {
         return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-            .flatMapMany(userToGetPreferences ->
-                Mono.justOrEmpty((User) userDetailsService.loadUserByUsername(accessToken.getSubject()))
-                    .flatMapMany(currentUser -> {
-                        if (!ControllerHelper.hasPermission(userToGetPreferences, currentUser)) {
-                            return Flux.error(new AccessDeniedException(
-                                "You don't have the permission to update this user preferences"));
-                        }
-                        return configPreferenceService.upsertConfigPreferences(
-                            userToGetPreferences.getId(), preferenceDto);
-                    })
-            );
+        .flatMapMany(userToGetPreferences -> {
+            return userDetailsService.findByUsername(accessToken.getSubject())
+            .flatMapMany(currentUser -> {
+                if (!ControllerHelper.hasPermission(userToGetPreferences, (User) currentUser)) {
+                    return Flux.error(new AccessDeniedException(
+                        "You don't have the permission to get this user preferences"));
+                }
+                return configPreferenceService.upsertConfigPreferences(
+                    userToGetPreferences.getId(), preferenceDto);
+            });
+        });
+
     }
 
 }

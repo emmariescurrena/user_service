@@ -42,7 +42,7 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         createRegularUser();
     }
 
-    private void createSuperAdministrator() {
+    private Mono<Void> createSuperAdministrator() {
         CreateUserDto userDto = new CreateUserDto();
 
         userDto.setEmail(superAdminEmail);
@@ -50,15 +50,16 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         userDto.setAuth0UserId(superAdminAuth0UserId);
 
         userService.getUserByEmail(userDto.getEmail())
-        .flatMap(existingUser -> {
+        .flatMap(_ -> {
             return Mono.empty();
         })
         .switchIfEmpty(
             userService.createSuperAdmin(userDto)
         );
+        return Mono.empty();
     }
 
-    private void createRegularUser() {
+    private Mono<Void> createRegularUser() {
         CreateUserDto userDto = new CreateUserDto();
 
         userDto.setEmail(regularUserEmail);
@@ -66,13 +67,14 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
         userDto.setAuth0UserId(regularUserAuth0UserId);
 
         userService.getUserByEmail(regularUserEmail)
-        .flatMap(existingUser -> {
+        .flatMap(_ -> {
             return Mono.empty();
         })
         .switchIfEmpty(
             userService.createUser(userDto)
-        )
-        .subscribe();
+        );
+
+        return Mono.empty();
     }
 
 }

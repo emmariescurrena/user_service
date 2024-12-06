@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.emmariescurrena.bookesy.user_service.dtos.UpdateUserDto;
-import com.emmariescurrena.bookesy.user_service.models.UserInfo;
+import com.emmariescurrena.bookesy.user_service.dtos.UserInfo;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import reactor.core.publisher.Mono;
 
 
 @Service
@@ -48,53 +50,50 @@ public class UserInfoService {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     private static record UpdateRequestBody(String nickname) {}
 
-    public UserInfo getUserInfo(String accessToken) {
+    public Mono<UserInfo> getUserInfo(String accessToken) {
         String requestUrl = auth0Domain + "userinfo";
         WebClient webClient = webClientBuilder.build();
         
-        UserInfo userInfo = webClient
+        return webClient
             .get()
             .uri(requestUrl)
             .header(HttpHeaders.AUTHORIZATION, accessToken)
             .retrieve()
-            .bodyToMono(UserInfo.class)
-            .block();
-
-        return userInfo;
+            .bodyToMono(UserInfo.class);
     }
 
-    public void updateUser(String userId, UpdateUserDto userDto) {
+    public Mono<Void> updateUser(String userId, UpdateUserDto userDto) {
         String apiToken = "Bearer " + getManagementApiToken();
         String requestUrl = auth0Domain + "api/v2/users/" + userId;
         UpdateRequestBody requestBody = new UpdateRequestBody(userDto.getNickname());
 
         WebClient webClient = webClientBuilder.build();
-        webClient
+        return webClient
             .patch()
             .uri(requestUrl)
             .header(HttpHeaders.AUTHORIZATION, apiToken)
             .bodyValue(requestBody)
             .retrieve()
-            .bodyToMono(String.class)
-            .block();
+            .toBodilessEntity()
+            .thenReturn(null);
     }
 
-    public void deleteUser(String userId) {
+    public Mono<Void> deleteUser(String userId) {
         String apiToken = "Bearer " + getManagementApiToken();
         String requestUrl = auth0Domain + "api/v2/users/" + userId;
         
         WebClient webClient = webClientBuilder.build();
-        webClient
+        return webClient
             .delete()
             .uri(requestUrl)
             .header(HttpHeaders.AUTHORIZATION, apiToken)
             .retrieve()
             .toBodilessEntity()
-            .block();
+            .thenReturn(null);
 
     }
 
-    private String getManagementApiToken() {
+    private Mono<String> getManagementApiToken() {
         String requestUrl = auth0Domain + "oauth/token";
         String grantType = "client_credentials";
 
@@ -103,16 +102,16 @@ public class UserInfoService {
 
         WebClient webClient = webClientBuilder.build();
 
-        AuthManagementTokenResponse responseBody = webClient
+        return webClient
             .post()
             .uri(requestUrl)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .bodyValue(requestBody)
             .retrieve()
             .bodyToMono(AuthManagementTokenResponse.class)
-            .block();
-
-        return responseBody.accessToken();
+            .map(responseBody -> {
+                return responseBody.accessToken();
+            });
     }
 
 

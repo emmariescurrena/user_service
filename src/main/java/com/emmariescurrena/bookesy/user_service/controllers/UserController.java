@@ -3,9 +3,7 @@ package com.emmariescurrena.bookesy.user_service.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.dtos.UpdateUserDto;
+import com.emmariescurrena.bookesy.user_service.exceptions.NotFoundException;
 import com.emmariescurrena.bookesy.user_service.models.User;
+import com.emmariescurrena.bookesy.user_service.services.AuthorizationService;
 import com.emmariescurrena.bookesy.user_service.services.UserInfoService;
 import com.emmariescurrena.bookesy.user_service.services.UserService;
-import com.emmariescurrena.bookesy.user_service.util.ControllerHelper;
 
 import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
@@ -39,7 +38,7 @@ public class UserController {
     private UserInfoService userInfoService;
 
     @Autowired
-    private ReactiveUserDetailsService userDetailsService;
+    private AuthorizationService authorizationService;
 
     @PostMapping
     public Mono<ResponseEntity<?>> createUser(@Valid @RequestBody CreateUserDto userDto) {
@@ -67,19 +66,14 @@ public class UserController {
         @Valid @RequestBody UpdateUserDto userDto,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-        .flatMap(userToUpdate ->
-            userDetailsService.findByUsername(accessToken.getSubject())
-            .flatMap(currentUser -> {
-                if (!ControllerHelper.hasPermission(userToUpdate, (User) currentUser)) {
-                    return Mono.error(new AccessDeniedException(
-                        "You don't have the permission to update this user"));
-                }
+        return userService.getUserByEmail(email)
+            .flatMap(userToUpdate -> {
+                authorizationService.hasPermission(userToUpdate, accessToken.getSubject());
                 return userInfoService.updateUser(userToUpdate.getAuth0UserId(), userDto)
                     .then(userService.updateUser(userToUpdate, userDto))
                     .map(updatedUser -> ResponseEntity.ok(updatedUser));
             })
-        );
+            .switchIfEmpty(Mono.error(new NotFoundException("User not found")));
     }
 
     @DeleteMapping("/{email}")
@@ -87,19 +81,15 @@ public class UserController {
         @PathVariable String email,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-        .flatMap(userToDelete ->
-            userDetailsService.findByUsername(accessToken.getSubject())
-                .flatMap(currentUser -> {
-                    if (!ControllerHelper.hasPermission(userToDelete, (User) currentUser)) {
-                        return Mono.error(new AccessDeniedException(
-                            "You don't have the permission to delete this user"));
-                    }
-                    return userInfoService.deleteUser(userToDelete.getAuth0UserId())
+        return userService.getUserByEmail(email)
+            .flatMap(userToDelete -> {
+                authorizationService.hasPermission(userToDelete, accessToken.getSubject());
+                return userInfoService.deleteUser(userToDelete.getAuth0UserId())
                         .then(userService.deleteUser(userToDelete))
                         .thenReturn(ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted"));
-                })
-        );
+            })
+            .switchIfEmpty(Mono.error(new NotFoundException("User not found")));
     }
+    
 }
 

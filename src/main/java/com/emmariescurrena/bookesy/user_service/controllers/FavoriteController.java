@@ -2,9 +2,7 @@ package com.emmariescurrena.bookesy.user_service.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.emmariescurrena.bookesy.user_service.models.User;
+import com.emmariescurrena.bookesy.user_service.exceptions.NotFoundException;
+import com.emmariescurrena.bookesy.user_service.services.AuthorizationService;
 import com.emmariescurrena.bookesy.user_service.services.FavoriteService;
 import com.emmariescurrena.bookesy.user_service.services.UserService;
-import com.emmariescurrena.bookesy.user_service.util.ControllerHelper;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,7 +33,7 @@ public class FavoriteController {
     private UserService userService;
 
     @Autowired
-    private ReactiveUserDetailsService userDetailsService;
+    private AuthorizationService authorizationService;
 
 
     @PostMapping("/{email}")
@@ -44,18 +42,13 @@ public class FavoriteController {
         @RequestParam String bookId,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-        .flatMap(userToAddFavorite ->
-            userDetailsService.findByUsername(accessToken.getSubject())
-                .flatMap(currentUser -> {
-                    if (!ControllerHelper.hasPermission(userToAddFavorite, (User) currentUser)) {
-                        return Mono.error(new AccessDeniedException(
-                            "You don't have the permission to add a favorite book to this user"));
-                    }
-                    return favoriteService.addFavorite(userToAddFavorite.getId(), bookId)
+        return userService.getUserByEmail(email)
+            .flatMap(userToAddFavorite -> {
+                authorizationService.hasPermission(userToAddFavorite, accessToken.getSubject());
+                return favoriteService.addFavorite(userToAddFavorite.getId(), bookId)
                         .thenReturn(ResponseEntity.ok("Favorite book added"));
-                })
-        );
+            })
+            .switchIfEmpty(Mono.error(new NotFoundException("User not found")));
     }
 
 
@@ -63,8 +56,9 @@ public class FavoriteController {
     public Flux<String> getUserFavorites(
         @PathVariable String email
     ) {
-        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-            .flatMapMany(user -> favoriteService.getUserFavoritesBooks(user.getId()));
+        return userService.getUserByEmail(email)
+            .flatMapMany(user -> favoriteService.getUserFavoritesBooks(user.getId()))
+            .switchIfEmpty(Mono.error(new NotFoundException("User not found")));
     }
 
 
@@ -74,18 +68,13 @@ public class FavoriteController {
         @RequestParam String bookId,
         @AuthenticationPrincipal Jwt accessToken
     ) {
-        return ControllerHelper.getUserFromMono(userService.getUserByEmail(email))
-        .flatMap(userToRemoveFavorite ->
-            userDetailsService.findByUsername(accessToken.getSubject())
-                .flatMap(currentUser -> {
-                    if (!ControllerHelper.hasPermission(userToRemoveFavorite, (User) currentUser)) {
-                        return Mono.error(new AccessDeniedException(
-                            "You don't have the permission to remove a favorite book to this user"));
-                    }
-                    return favoriteService.removeFavorite(userToRemoveFavorite.getId(), bookId)
-                        .thenReturn(ResponseEntity.ok("Favorite book removed"));
-                })
-        );
+        return userService.getUserByEmail(email)
+            .flatMap(userToRemoveFavorite -> {
+                authorizationService.hasPermission(userToRemoveFavorite, accessToken.getSubject());
+                return favoriteService.removeFavorite(userToRemoveFavorite.getId(), bookId)
+                    .thenReturn(ResponseEntity.ok("Favorite book removed"));
+            })
+            .switchIfEmpty(Mono.error(new NotFoundException("User not found")));
     }
 
 }

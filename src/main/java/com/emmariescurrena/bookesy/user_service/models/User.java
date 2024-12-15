@@ -38,6 +38,7 @@ public class User implements UserDetails {
 
     @Column("auth0user_id")
     @NotEmpty(message = "The auth0UserId is required")
+    @JsonIgnore
     private String auth0UserId;
 
     @Column("email")

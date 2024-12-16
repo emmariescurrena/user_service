@@ -22,19 +22,15 @@ public class FavoriteService {
 
     @Transactional
     public Mono<Void> addFavorite(Long userId, String bookId) {
-        return userService.getUserById(userId)
-            .switchIfEmpty(Mono.error(new NotFoundException("User not found")))
-            .flatMap(user -> {
-                return favoriteRepository.existsByUserIdAndBookId(user.getId(), bookId)
-                    .flatMap(exists -> {
-                        if (exists) {
-                            return Mono.error(new IllegalArgumentException(
-                                "Favorite already exists for this book"));
-                        } else {
-                            Favorite favorite = new Favorite(userId, bookId);
-                            return favoriteRepository.save(favorite).then();
-                        }
-                    });
+        return favoriteRepository.existsByUserIdAndBookId(userId, bookId)
+            .flatMap(exists -> {
+                if (exists) {
+                    return Mono.error(new IllegalArgumentException(
+                        "Book already saved as favorite"));
+                } else {
+                    Favorite favorite = new Favorite(userId, bookId);
+                    return favoriteRepository.save(favorite).then();
+                }
             });
     }
 

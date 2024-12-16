@@ -39,8 +39,7 @@ public class FavoriteService {
         return favoriteRepository.findByUserIdAndBookId(userId, bookId)
             .switchIfEmpty(Mono.error(new NotFoundException("Favorite book not found")))
             .flatMap(favorite -> {
-                favoriteRepository.delete(favorite);
-                return Mono.empty();
+                return favoriteRepository.delete(favorite).then();
             });
     }
 

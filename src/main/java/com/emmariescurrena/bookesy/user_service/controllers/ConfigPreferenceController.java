@@ -24,16 +24,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-
 @RestController
 @RequestMapping("/api/users/config-preferences")
 public class ConfigPreferenceController {
     
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @Autowired
-    ConfigPreferenceService configPreferenceService;
+    private ConfigPreferenceService configPreferenceService;
 
     @Autowired
     private AuthorizationService authorizationService;

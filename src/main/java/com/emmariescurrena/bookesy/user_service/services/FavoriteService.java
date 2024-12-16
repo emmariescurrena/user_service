@@ -15,10 +15,7 @@ import reactor.core.publisher.Mono;
 public class FavoriteService {
     
     @Autowired
-    FavoriteRepository favoriteRepository;
-
-    @Autowired
-    UserService userService;
+    private FavoriteRepository favoriteRepository;
 
     @Transactional
     public Mono<Void> addFavorite(Long userId, String bookId) {

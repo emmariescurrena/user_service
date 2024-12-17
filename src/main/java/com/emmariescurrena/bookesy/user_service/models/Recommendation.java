@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import lombok.Data;
 
+@Data
 @Table("recommendations")
 public class Recommendation {
 

@@ -5,10 +5,13 @@ import org.springframework.stereotype.Repository;
 
 import com.emmariescurrena.bookesy.user_service.models.MyBookshelfBook;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
 @Repository
 public interface MyBookshelfBookRepository extends ReactiveCrudRepository<MyBookshelfBook, Long> {
-    Mono<MyBookshelfBook> findByUserId(Long userId);
+    Flux<MyBookshelfBook> findByUserId(Long userId);
+    Mono<MyBookshelfBook> findByUserIdAndBookId(Long userId, String bookId);
+    Mono<Boolean> existsByUserIdAndBookId(Long userId, String bookId);
 }

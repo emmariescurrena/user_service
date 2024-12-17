@@ -30,6 +30,6 @@ public class MyBookshelfBook {
 
     @Column("book_status")
     @Enumerated(EnumType.STRING)
-    private BookStatusEnum book_status;
+    private BookStatusEnum bookStatus;
 
 }

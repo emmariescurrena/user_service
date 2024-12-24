@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 
 
 @RestController
-@RequestMapping("/api/favorites")
+@RequestMapping("/api/users/favorites")
 public class FavoriteController {
     
     @Autowired

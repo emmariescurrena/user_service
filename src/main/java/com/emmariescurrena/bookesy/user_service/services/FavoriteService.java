@@ -22,8 +22,7 @@ public class FavoriteService {
         return favoriteRepository.existsByUserIdAndBookId(userId, bookId)
             .flatMap(exists -> {
                 if (exists) {
-                    return Mono.error(new IllegalArgumentException(
-                        "Book already saved as favorite"));
+                    return Mono.empty();
                 } else {
                     Favorite favorite = new Favorite(userId, bookId);
                     return favoriteRepository.save(favorite).then();

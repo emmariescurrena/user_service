@@ -3,8 +3,12 @@ spring:
     name: user-service
   main:
     web-application-type: reactive
+  datasource:
+    url: ${USER_DB_POSTGRES_JDBC_URL}
+    username: ${USER_DB_POSTGRES_USER}
+    password: ${USER_DB_POSTGRES_PASSWORD}
   r2dbc:
-    url: ${USER_DB_POSTGRES_URL}
+    url: ${USER_DB_POSTGRES_R2DBC_URL}
     username: ${USER_DB_POSTGRES_USER}
     password: ${USER_DB_POSTGRES_PASSWORD}
   data:
@@ -13,6 +17,9 @@ spring:
         enabled: true
   flyway:
     enabled: true
+    url: ${USER_DB_POSTGRES_JDBC_URL}
+    user: ${USER_DB_POSTGRES_USER}
+    password: ${USER_DB_POSTGRES_PASSWORD}
     locations: classpath:db/migration
 
 okta:
@@ -39,10 +46,3 @@ regular-user:
   nickname: ${REGULAR_USER_NICKNAME}
   email: ${REGULAR_USER_EMAIL}
   auth0-user-id: ${REGULAR_USER_AUTH0_USER_ID}
-
-logging:
-  level:
-    org:
-      springframework:
-        security: DEBUG
-        r2dbc: DEBUG

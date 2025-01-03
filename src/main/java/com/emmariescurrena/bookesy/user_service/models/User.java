@@ -18,8 +18,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -33,7 +31,6 @@ import lombok.NoArgsConstructor;
 public class User implements UserDetails {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column("auth0user_id")
@@ -65,9 +62,11 @@ public class User implements UserDetails {
     private RoleEnum role = RoleEnum.USER;
 
     @Transient
+    @JsonIgnore
     private String username;
 
     @Transient
+    @JsonIgnore
     private String password;
 
     public User setRole(RoleEnum role) {
@@ -117,6 +116,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 
 }

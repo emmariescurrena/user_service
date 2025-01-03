@@ -1,7 +1,0 @@
-CREATE TABLE IF NOT EXISTS config_preferences (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    value VARCHAR(100) NOT NULL,
-    user_id BIGINT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);

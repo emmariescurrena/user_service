@@ -1,5 +1,7 @@
 package com.emmariescurrena.bookesy.user_service.bootstrap;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
@@ -9,8 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.emmariescurrena.bookesy.user_service.dtos.CreateUserDto;
 import com.emmariescurrena.bookesy.user_service.services.UserService;
-
-import reactor.core.publisher.Mono;
 
 @Component
 public class DatabaseInitializer implements ApplicationListener<ContextRefreshedEvent> {
@@ -36,45 +36,37 @@ public class DatabaseInitializer implements ApplicationListener<ContextRefreshed
     @Value("${regular-user.auth0-user-id}")
     private String regularUserAuth0UserId;
 
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent contextRefreshedEvent) {
-        createSuperAdministrator();
-        createRegularUser();
+        if (initialized.compareAndSet(false, true)) {
+            createSuperAdministrator();
+            createRegularUser();
+        }
     }
 
-    private Mono<Void> createSuperAdministrator() {
+    private void createSuperAdministrator() {
         CreateUserDto userDto = new CreateUserDto();
-
         userDto.setEmail(superAdminEmail);
         userDto.setNickname(superAdminNickname);
         userDto.setAuth0UserId(superAdminAuth0UserId);
-
+        
         userService.getUserByEmail(userDto.getEmail())
-        .flatMap(_ -> {
-            return Mono.empty();
-        })
-        .switchIfEmpty(
-            userService.createSuperAdmin(userDto)
-        );
-        return Mono.empty();
+        .switchIfEmpty(userService.createSuperAdmin(userDto))
+        .subscribe();
     }
-
-    private Mono<Void> createRegularUser() {
+    
+    private void createRegularUser() {
         CreateUserDto userDto = new CreateUserDto();
-
         userDto.setEmail(regularUserEmail);
         userDto.setNickname(regularUserNickname);
         userDto.setAuth0UserId(regularUserAuth0UserId);
-
-        userService.getUserByEmail(regularUserEmail)
-        .flatMap(_ -> {
-            return Mono.empty();
-        })
-        .switchIfEmpty(
-            userService.createUser(userDto)
-        );
-
-        return Mono.empty();
+    
+        userService.getUserByEmail(userDto.getEmail())
+        .switchIfEmpty(userService.createUser(userDto))
+        .subscribe();
     }
+    
 
 }

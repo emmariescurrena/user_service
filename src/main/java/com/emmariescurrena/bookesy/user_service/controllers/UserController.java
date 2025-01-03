@@ -41,16 +41,15 @@ public class UserController {
     private AuthorizationService authorizationService;
 
     @PostMapping
-    public Mono<ResponseEntity<?>> createUser(@Valid @RequestBody CreateUserDto userDto) {
+    public Mono<ResponseEntity<String>> createUser(@Valid @RequestBody CreateUserDto userDto) {
         return userService.getUserByEmail(userDto.getEmail())
-        .flatMap(_ ->
-            Mono.just(ResponseEntity.ok("User already exists"))
-        )
-        .flatMap(response ->
-            response.getStatusCode() == HttpStatus.OK ? Mono.just(response) :
-            userService.createUser(userDto).map(newUser -> ResponseEntity.ok(newUser))
-        );
+            .flatMap(_ -> Mono.just(ResponseEntity.ok("User already exists")))
+            .switchIfEmpty(
+                userService.createUser(userDto)
+                    .map(_ -> ResponseEntity.status(HttpStatus.CREATED).body("User created"))
+            );
     }
+
 
     @GetMapping("/{email}")
     public Mono<ResponseEntity<User>> getUser(@PathVariable String email) {
